@@ -1,0 +1,96 @@
+import tkinter as tk
+from tkinter import ttk
+from datetime import datetime
+from ttkthemes import ThemedTk
+
+# Create the main window with a themed style
+root = ThemedTk(theme="black")  # You can choose a different theme if you prefer
+root.title("8-Bit Weekly Planner")
+
+# Configure the theme colors (modify these to achieve an 8-bit style with purple and yellow)
+root.tk_setPalette(background="#8B00FF", foreground="#FFFF00")  # Purple and yellow colors
+style = ttk.Style()
+style.configure("TButton", background="#FFD700", font=("8-Bit Madness", 12))
+style.configure("TFrame", background="#800080")
+style.configure("TLabel", background="#800080", foreground="#FFFF00", font=("8-Bit Madness", 12))
+
+# Create a dictionary to store tasks for each day of the week
+weekly_tasks = {
+    "Monday": [],
+    "Tuesday": [],
+    "Wednesday": [],
+    "Thursday": [],
+    "Friday": [],
+    "Saturday": [],
+    "Sunday": [],
+}
+
+# Function to add a task with a timestamp
+def add_task():
+    day = selected_day.get()
+    task = entry.get()
+    timestamp = selected_time.get()
+    if day and task:
+        task_with_time = f"{timestamp} - {task}"
+        weekly_tasks[day].append(task_with_time)
+        update_task_list(day)
+        entry.delete(0, tk.END)
+
+# Function to update the task list for a specific day
+def update_task_list(day):
+    task_listbox.delete(*task_listbox.get_children())
+    for task in weekly_tasks[day]:
+        task_listbox.insert("", "end", values=(task,))
+
+# Function to remove the selected task
+def remove_task():
+    selected_task = task_listbox.selection()
+    if selected_task:
+        task = task_listbox.item(selected_task[0], "values")[0]
+        day = selected_day.get()
+        weekly_tasks[day].remove(task)
+        update_task_list(day)
+
+# Function to change the selected day
+def change_day(event):
+    day = selected_day.get()
+    update_task_list(day)
+
+# Create a drop-down menu to select the day
+selected_day = tk.StringVar()
+day_choices = list(weekly_tasks.keys())
+selected_day.set(day_choices[0])
+day_menu = ttk.Combobox(root, textvariable=selected_day, values=day_choices)
+day_menu.bind("<<ComboboxSelected>>", change_day)
+day_menu.pack(pady=10)
+
+# Create a drop-down menu to select the time (24-hour format)
+selected_time = tk.StringVar()
+time_choices = [
+    "00:00", "01:00", "02:00", "03:00", "04:00", "05:00", "06:00", "07:00",
+    "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00",
+    "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00", "23:00"
+]
+selected_time.set(time_choices[0])
+time_menu = ttk.Combobox(root, textvariable=selected_time, values=time_choices)
+time_menu.pack(pady=5)
+
+# Create an entry field for task input
+entry = ttk.Entry(root, width=30)
+entry.pack(pady=5)
+
+# Create an "Add Task" button
+add_button = ttk.Button(root, text="Add Task", command=add_task)
+add_button.pack()
+
+# Create a "Remove Task" button
+remove_button = ttk.Button(root, text="Remove Task", command=remove_task)
+remove_button.pack()
+
+# Create a listbox to display tasks for the selected day
+task_listbox = ttk.Treeview(root, columns=("Task",), show="headings", height=10)
+task_listbox.heading("Task", text="Tasks")
+task_listbox.pack(pady=10)
+
+# Main loop
+root.mainloop()
